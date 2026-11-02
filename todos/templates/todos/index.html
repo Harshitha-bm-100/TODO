@@ -1,0 +1,50 @@
+{% load static %}
+{# Variables in {{ }} come from the index view: todos and open_count. #}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Todos</title>
+  <link rel="stylesheet" href="{% static 'todos/style.css' %}">
+</head>
+<body>
+  <main class="page">
+    <header class="heading">
+      <p class="eyebrow">SQLite · Django</p>
+      <h1>Todos</h1>
+      <p class="count">{{ open_count }} open</p>
+    </header>
+
+    {# POST goes to the "add" URL. csrf_token is required on every POST form. #}
+    <form class="add" method="post" action="{% url 'add' %}">
+      {% csrf_token %}
+      <input type="text" name="title" maxlength="200" placeholder="Add a task" required autofocus>
+      <button type="submit">Add</button>
+    </form>
+
+    {% if todos %}
+      <ul class="list">
+        {% for todo in todos %}
+          <li class="{% if todo.completed %}done{% endif %}">
+            {# todo.pk is the row id, so this posts to /<id>/toggle/. #}
+            <form method="post" action="{% url 'toggle' todo.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="check" aria-label="Toggle {{ todo.title }}">
+                {% if todo.completed %}✓{% endif %}
+              </button>
+            </form>
+            <span class="title">{{ todo.title }}</span>
+            <form method="post" action="{% url 'delete' todo.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="delete" aria-label="Delete {{ todo.title }}">Delete</button>
+            </form>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="empty">Nothing here yet. Add a task above.</p>
+    {% endif %}
+  </main>
+</body>
+</html>
